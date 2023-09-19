@@ -78,7 +78,7 @@ class ExpandingBlock(nn.Module):
 
             print('x.shape: ', x.shape)
 
-        print('skip.shape: ', skip.shape, ' x.shape: ', x.shape)
+            print('skip.shape: ', skip.shape, ' x.shape: ', x.shape)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu1(x)
