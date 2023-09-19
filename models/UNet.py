@@ -1,6 +1,8 @@
 import torch.nn as nn
 import pytorch_lightning as pl
 import torch
+from torch_lr_finder import LRFinder
+
 
 class ContractingBlock(nn.Module):
     def __init__(self, in_channels, out_channels, downsample='strided_conv'):
@@ -74,7 +76,7 @@ class ExpandingBlock(nn.Module):
 
 
 class UNet(pl.LightningModule):
-    def __init__(self, in_channels, out_channels, loss_fn=nn.BCELoss):
+    def __init__(self, in_channels, out_channels, max_lr=None, loss_fn=nn.BCELoss):
         super(UNet, self).__init__()
 
         self.contract1 = ContractingBlock(in_channels, 64)
@@ -87,6 +89,19 @@ class UNet(pl.LightningModule):
         self.expand3 = ExpandingBlock(128, 64)
 
         self.final_conv = nn.Conv2d(64, out_channels, kernel_size=1)
+        self.loss_fn = loss_fn
+
+        self.max_lr = max_lr
+
+        self.metric = dict(
+            train_steps=0,
+            step_train_loss=[],
+            epoch_train_loss=[],
+            val_steps=0,
+            step_val_loss=[],
+            epoch_val_loss=[]
+        )
+
 
     def forward(self, x):
         # Contracting path
@@ -109,10 +124,39 @@ class UNet(pl.LightningModule):
         data, target = train_batch
         pred = self.forward(data)
 
+        loss = self.loss_fn(pred, target)
+        self.metric['step_train_loss'].append(loss)
+        self.metric['train_steps'] += 1
+
+        self.log_dict(dict(train_loss=loss))
+        return loss
+
 
     def validation_step(self, val_batch, batch_idx):
         data, target = val_batch
         pred = self.forward(data)
+        loss = self.loss_fn(pred, target)
+        self.metric['step_val_loss'].append(loss)
+        self.metric['val_steps'] += 1
+
+        self.log_dict(dict(val_loss=loss))
+
+
+    def on_validation_epoch_end(self):
+        if self.metric['train_steps'] > 0:
+            print('Epoch ', self.current_epoch+1)
+
+            epoch_loss = sum(self.metric['step_train_loss']) / len(self.metric['step_train_loss'])
+            self.metric['epoch_train_loss'].append(epoch_loss)
+            self.metric['step_train_loss'] = []
+
+            print('Train Loss: ', epoch_loss)
+
+            epoch_loss = sum(self.metric['step_val_loss']) / len(self.metric['step_val_loss'])
+            self.metric['epoch_val_loss'].append(epoch_loss)
+            self.metric['step_val_loss'] = []
+            print('Val Loss: ', epoch_loss)
+
 
 
     def test_step(self, test_batch, batch_idx):
@@ -124,8 +168,22 @@ class UNet(pl.LightningModule):
 
         return self.trainer.train_dataloader
 
+
+    def find_lr(self, optimizer):
+
+        lr_finder = LRFinder(self, optimizer, self.loss_fn)
+        lr_finder.range_test(self.train_dataloader(), end_lr=100, num_iter=100)
+        _, best_lr = lr_finder.plot()  # to inspect the loss-learning rate graph
+        lr_finder.reset()
+        self.max_lr = best_lr
+
+
     def configure_optimizers(self):
-        optimizer = torch.optim.SGD(self.parameters(), lr=self.cfg['lr'])
+        if not self.max_lr:
+            optimizer = torch.optim.Adam(self.parameters(), lr=10e-6, weight_decay=10e-2)
+            self.find_lr(optimizer)
+
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.max_lr, weight_decay=10e-2)
         '''scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,
                                                         max_lr=cfg.LEARNING_RATE,
                                                         epochs=self.trainer.max_epochs,
