@@ -1,6 +1,8 @@
 from torch.utils.data import Dataset
 import torchvision
-from torchvision import transforms as T
+import albumentations as A
+import cv2
+from albumentations.pytorch import ToTensorV2
 
 import torch
 
@@ -31,13 +33,21 @@ class SegmentOxfordIIITPetDataset(Dataset):
         self.ds = torchvision.datasets.OxfordIIITPet(root=root,
                                                      target_types='segmentation',
                                                      download=download,
-                                                     split=split,
-                                                     transform=transform)
+                                                     split=split)
+
+        self.transform = transform
 
 
 
     def __getitem__(self, idx):
         data, seg = self.ds[idx]
+
+        if self.transform:
+            data_aug = self.transform(image=data)
+            data = data_aug['image']
+
+            seg_aug = self.transform(image=seg)
+            seg = seg_aug['image']
 
         return data, seg
 
@@ -46,10 +56,17 @@ class SegmentOxfordIIITPetDataset(Dataset):
 
 
 def get_dataloader(**kwargs):
-    transofrm = T.Compose(
+    from config import get_config
+    cfg = get_config(ds='unet')
+
+    transofrm = A.Compose(
         [
-            T.ToTensor(),
-            T.Normalize()
+            A.LongestMaxSize(max_size=cfg['image_size']),
+            A.PadIfNeeded(
+                min_height=cfg['image_size'], min_width=cfg['image_size'], border_mode=cv2.BORDER_CONSTANT
+            ),
+            A.Normalize(mean=[0, 0, 0], std=[1, 1, 1], max_pixel_value=255, ),
+            ToTensorV2()
         ]
     )
 
