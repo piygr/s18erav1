@@ -1,9 +1,8 @@
 from torch.utils.data import Dataset
 import torchvision
-import albumentations as A
-import cv2
-from albumentations.pytorch import ToTensorV2
+from torchvision import transforms as T
 import numpy as np
+from PIL import Image
 
 from config import get_config
 cfg = get_config(ds='unet')
@@ -26,9 +25,8 @@ def get_dataset_mean_variance(dataset):
     return tuple(mean), tuple(std)
 
 
-
 class SegmentOxfordIIITPetDataset(Dataset):
-    def __init__(self, root='../data', download=True, train=True, transform=None):
+    def __init__(self, root='../data', download=True, train=True, target_transform=None, mask_transform=None):
         if train:
             split = 'trainval'
         else:
@@ -39,22 +37,19 @@ class SegmentOxfordIIITPetDataset(Dataset):
                                                      download=download,
                                                      split=split)
 
-        self.transform = transform
-
+        self.target_transform = target_transform
+        self.mask_transform = mask_transform
 
 
     def __getitem__(self, idx):
         data, seg = self.ds[idx]
 
-        data = np.array(data, np.int16)
-        seg = np.array(seg, np.int16)
 
-        if self.transform:
-            data_aug = self.transform(image=data, )
-            data = data_aug['image']
+        if self.target_transform:
+            data = self.target_transform(data)
 
-            seg_aug = self.transform(image=seg, )
-            seg = seg_aug['image']
+        if self.mask_transform:
+            seg = self.mask_transform(seg)
 
         return data, seg
 
@@ -64,21 +59,27 @@ class SegmentOxfordIIITPetDataset(Dataset):
 
 
 def get_dataloader(**kwargs):
-    transofrm = A.Compose(
+
+    dataset_mean = (0.485, 0.456, 0.406)
+    dataset_std = (0.229, 0.224, 0.225)
+
+    image_transform = T.Compose(
         [
-            A.LongestMaxSize(max_size=cfg['image_size']),
-            A.PadIfNeeded(
-                min_height=cfg['image_size'], min_width=cfg['image_size'], border_mode=cv2.BORDER_CONSTANT
-            ),
-            A.Normalize(mean=[0, 0, 0], std=[1, 1, 1], max_pixel_value=255, ),
-            ToTensorV2()
+            T.Resize((224, 224)),
+            T.ToTensor(),
+            T.Normalize(mean=dataset_mean, std=dataset_std)
         ]
     )
 
-    '''if not dataset_mean or not dataset_std:
-        get_dataset_mean_variance(SegmentOxfordIIITPetDataset(train=True, download=True, transform=transofrm))'''
+    mask_transform = T.Compose(
+        [
+            T.Resize((224, 224)),
+            T.ToTensor()
+        ]
+    )
 
-    train_data = SegmentOxfordIIITPetDataset(train=True, download=True, transform=transofrm)
-    test_data = SegmentOxfordIIITPetDataset(train=False, download=True, transform=transofrm)
+
+    train_data = SegmentOxfordIIITPetDataset(train=True, download=True, target_transform=image_transform, mask_transform=mask_transform)
+    test_data = SegmentOxfordIIITPetDataset(train=False, download=True, target_transform=image_transform, mask_transform=mask_transform)
 
     return torch.utils.data.DataLoader(train_data, **kwargs), torch.utils.data.DataLoader(test_data, **kwargs)
