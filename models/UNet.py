@@ -6,7 +6,7 @@ import torchvision.transforms.functional as TF
 
 
 class ContractingBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, downsample='strided_conv'):
+    def __init__(self, in_channels, out_channels, downsample=None):
         super(ContractingBlock, self).__init__()
 
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
@@ -45,7 +45,7 @@ class ContractingBlock(nn.Module):
 
 
 class ExpandingBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, upsample='transpose_conv'):
+    def __init__(self, in_channels, out_channels, upsample=None):
         super(ExpandingBlock, self).__init__()
 
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
@@ -56,7 +56,10 @@ class ExpandingBlock(nn.Module):
         self.bn2 = nn.BatchNorm2d(out_channels)
         self.relu2 = nn.ReLU(inplace=True)
 
-        if upsample == 'transpose_conv':
+        if not upsample:
+            self.upsample = None
+            self.upsample2 = None
+        elif upsample == 'transpose_conv':
             self.upsample = nn.ConvTranspose2d(out_channels, out_channels // 2, kernel_size=2, stride=2)
             self.upsample2 = None
         else:
@@ -64,6 +67,16 @@ class ExpandingBlock(nn.Module):
             self.upsample2 = nn.Conv2d(out_channels, out_channels // 2, kernel_size=1, padding=1)
 
     def forward(self, x, skip):
+
+        if skip:
+            # concatenate the skip connection
+            if x.shape != skip.shape:
+                x = TF.resize(x, size=skip.shape[2:])
+
+            print('pre x.shape: ', x.shape, ' skip.shape: ', skip.shape)
+            x = torch.cat((skip, x), dim=1)
+
+            print('x.shape: ', x.shape)
 
         print('skip.shape: ', skip.shape, ' x.shape: ', x.shape)
         x = self.conv1(x)
@@ -74,18 +87,11 @@ class ExpandingBlock(nn.Module):
         x = self.bn2(x)
         x = self.relu2(x)
 
-        x = self.upsample(x)
+        if self.upsample:
+            x = self.upsample(x)
+
         if self.upsample2:
             x = self.upsample2(x)
-
-        # concatenate the skip connection
-        if x.shape != skip.shape:
-            x = TF.resize(x, size=skip.shape[2:])
-
-        print('pre x.shape: ', x.shape, ' skip.shape: ', skip.shape)
-        x = torch.cat((skip, x), dim=1)
-
-        print('x.shape: ', x.shape)
 
         return x
 
@@ -104,9 +110,8 @@ class UNet(pl.LightningModule):
         self.contract2 = ContractingBlock(64, 128, downsample=downsample)
         self.contract3 = ContractingBlock(128, 256, downsample=downsample)
 
-        self.bottleneck = ContractingBlock(256, 512, downsample=downsample)
-
-        #self.bottleneck2 = ExpandingBlock(512, 256, upsample=None)
+        self.bottleneck = ContractingBlock(256, 512)
+        self.bottleneck2 = ExpandingBlock(512, 256)
 
         self.expand1 = ExpandingBlock(512, 256, upsample=upsample)
         self.expand2 = ExpandingBlock(256, 128, upsample=upsample)
@@ -134,6 +139,7 @@ class UNet(pl.LightningModule):
         x, skip3 = self.contract3(x)    #skip3 : 256
 
         _, x = self.bottleneck(x)       #x :    256
+        x = self.bottleneck2(x, None)
 
         # Expanding path
         #x = self.expand0(x, skip4)
