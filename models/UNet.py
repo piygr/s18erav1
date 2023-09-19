@@ -94,6 +94,7 @@ class UNet(pl.LightningModule):
         self.contract3 = ContractingBlock(128, 256, downsample=downsample)
         self.contract4 = ContractingBlock(256, 512, downsample=downsample)
 
+        self.expand0 = ExpandingBlock(1024, 512, upsample=upsample)
         self.expand1 = ExpandingBlock(512, 256, upsample=upsample)
         self.expand2 = ExpandingBlock(256, 128, upsample=upsample)
         self.expand3 = ExpandingBlock(128, 64, upsample=upsample)
@@ -115,12 +116,13 @@ class UNet(pl.LightningModule):
 
     def forward(self, x):
         # Contracting path
-        x, skip1 = self.contract1(x)
+        x, skip1 = self.contract1(x)    #64
         x, skip2 = self.contract2(x)
         x, skip3 = self.contract3(x)
-        x, _ = self.contract4(x)
+        x, skip4 = self.contract4(x)
 
         # Expanding path
+        x = self.expand0(x, skip4)
         x = self.expand1(x, skip3)
         x = self.expand2(x, skip2)
         x = self.expand3(x, skip1)
