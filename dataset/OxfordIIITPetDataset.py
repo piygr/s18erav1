@@ -6,22 +6,19 @@ import torch
 
 dataset_mean = None
 dataset_std = None
+
 def get_dataset_mean_variance(dataset):
+    imgs = [item[0] for item in dataset]
+    imgs = torch.stack(imgs, dim=0)
 
-    if dataset_mean and dataset_std:
-        return dataset_std, dataset_std
+    mean = []
+    std = []
+    for i in range(imgs.shape[1]):
+        mean.append(imgs[:, i, :, :].mean().item())
+        std.append(imgs[:, i, :, :].std().item())
 
-    else:
-        imgs = [item[0] for item in dataset]
-        imgs = torch.stack(imgs, dim=0)
+    return tuple(mean), tuple(std)
 
-        mean = []
-        std = []
-        for i in range(imgs.shape[1]):
-            mean.append(imgs[:, i, :, :].mean().item())
-            std.append(imgs[:, i, :, :].std().item())
-
-        return tuple(mean), tuple(std)
 
 
 class SegmentOxfordIIITPetDataset(Dataset):
