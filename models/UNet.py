@@ -16,7 +16,9 @@ class ContractingBlock(nn.Module):
         self.bn2 = nn.BatchNorm2d(out_channels)
         self.relu2 = nn.ReLU(inplace=True)
 
-        if downsample == 'strided_conv':
+        if not downsample:
+            self.downsample = None
+        elif downsample == 'strided_conv':
             self.downsample = nn.Conv2d(out_channels, out_channels, kernel_size=2, stride=2, padding=0)
         else:
             self.downsample = nn.MaxPool2d(kernel_size=2, stride=2)
@@ -32,6 +34,9 @@ class ContractingBlock(nn.Module):
         x = self.relu2(x)
 
         skip = x  # store the output for the skip connection
+        if not self.downsample:
+            return x, skip
+
         x = self.downsample(x)
 
         print('x.shape: ', x.shape, ' skip.shape: ', skip.shape)
@@ -92,9 +97,10 @@ class UNet(pl.LightningModule):
         self.contract1 = ContractingBlock(in_channels, 64, downsample=downsample)
         self.contract2 = ContractingBlock(64, 128, downsample=downsample)
         self.contract3 = ContractingBlock(128, 256, downsample=downsample)
-        self.contract4 = ContractingBlock(256, 512, downsample=downsample)
 
-        self.expand0 = ExpandingBlock(1024, 512, upsample=upsample)
+        self.bottleneck = ContractingBlock(256, 512, downsample=downsample)
+
+        #self.expand0 = ExpandingBlock(1024, 512, upsample=upsample)
         self.expand1 = ExpandingBlock(512, 256, upsample=upsample)
         self.expand2 = ExpandingBlock(256, 128, upsample=upsample)
         self.expand3 = ExpandingBlock(128, 64, upsample=upsample)
@@ -119,10 +125,11 @@ class UNet(pl.LightningModule):
         x, skip1 = self.contract1(x)    #64
         x, skip2 = self.contract2(x)
         x, skip3 = self.contract3(x)
-        x, skip4 = self.contract4(x)
+
+        x, _ = self.bottleneck(x)
 
         # Expanding path
-        x = self.expand0(x, skip4)
+        #x = self.expand0(x, skip4)
         x = self.expand1(x, skip3)
         x = self.expand2(x, skip2)
         x = self.expand3(x, skip1)
