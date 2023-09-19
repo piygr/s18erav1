@@ -68,7 +68,7 @@ class ExpandingBlock(nn.Module):
 
     def forward(self, x, skip):
 
-        if skip:
+        if skip is not None:
             # concatenate the skip connection
             if x.shape != skip.shape:
                 x = TF.resize(x, size=skip.shape[2:])
