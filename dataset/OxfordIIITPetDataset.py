@@ -3,6 +3,10 @@ import torchvision
 import albumentations as A
 import cv2
 from albumentations.pytorch import ToTensorV2
+import numpy as np
+
+from config import get_config
+cfg = get_config(ds='unet')
 
 import torch
 
@@ -42,6 +46,9 @@ class SegmentOxfordIIITPetDataset(Dataset):
     def __getitem__(self, idx):
         data, seg = self.ds[idx]
 
+        data = np.array(data, np.int16)
+        seg = np.array(seg, np.int16)
+
         if self.transform:
             data_aug = self.transform(image=data)
             data = data_aug['image']
@@ -51,14 +58,12 @@ class SegmentOxfordIIITPetDataset(Dataset):
 
         return data, seg
 
+
     def __len__(self):
         return len(self.ds)
 
 
 def get_dataloader(**kwargs):
-    from config import get_config
-    cfg = get_config(ds='unet')
-
     transofrm = A.Compose(
         [
             A.LongestMaxSize(max_size=cfg['image_size']),
@@ -70,8 +75,8 @@ def get_dataloader(**kwargs):
         ]
     )
 
-    if not dataset_mean or not dataset_std:
-        get_dataset_mean_variance(SegmentOxfordIIITPetDataset(train=True, download=True, transform=transofrm))
+    '''if not dataset_mean or not dataset_std:
+        get_dataset_mean_variance(SegmentOxfordIIITPetDataset(train=True, download=True, transform=transofrm))'''
 
     train_data = SegmentOxfordIIITPetDataset(train=True, download=True, transform=transofrm)
     test_data = SegmentOxfordIIITPetDataset(train=False, download=True, transform=transofrm)
