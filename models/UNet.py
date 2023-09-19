@@ -2,6 +2,7 @@ import torch.nn as nn
 import pytorch_lightning as pl
 import torch
 from torch_lr_finder import LRFinder
+import torchvision.transforms.functional as TF
 
 
 class ContractingBlock(nn.Module):
@@ -60,7 +61,7 @@ class ExpandingBlock(nn.Module):
             self.upsample2 = None
         else:
             self.upsample = nn.Upsample(scale_factor=2, mode='nearest')
-            self.upsample2 = nn.Conv2d(out_channels, out_channels // 2, kernel_size=1)
+            self.upsample2 = nn.Conv2d(out_channels, out_channels // 2, kernel_size=1, padding=1)
 
     def forward(self, x, skip):
         print('skip.shape: ', skip.shape, ' x.shape: ', x.shape)
@@ -77,6 +78,9 @@ class ExpandingBlock(nn.Module):
             x = self.upsample2(x)
 
         # concatenate the skip connection
+        if x.shape != skip.shape:
+            x = TF.resize(x, size=skip.shape[2:])
+
         x = torch.cat((x, skip), dim=1)
 
         print('x.shape: ', x.shape)
