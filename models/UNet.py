@@ -65,13 +65,6 @@ class ExpandingBlock(nn.Module):
 
     def forward(self, x, skip):
 
-        # concatenate the skip connection
-        if x.shape != skip.shape:
-            x = TF.resize(x, size=skip.shape[2:])
-
-        print('pre x.shape: ', x.shape, ' skip.shape: ', skip.shape)
-        x = torch.cat((skip, x), dim=1)
-
         print('skip.shape: ', skip.shape, ' x.shape: ', x.shape)
         x = self.conv1(x)
         x = self.bn1(x)
@@ -84,6 +77,13 @@ class ExpandingBlock(nn.Module):
         x = self.upsample(x)
         if self.upsample2:
             x = self.upsample2(x)
+
+        # concatenate the skip connection
+        if x.shape != skip.shape:
+            x = TF.resize(x, size=skip.shape[2:])
+
+        print('pre x.shape: ', x.shape, ' skip.shape: ', skip.shape)
+        x = torch.cat((skip, x), dim=1)
 
         print('x.shape: ', x.shape)
 
