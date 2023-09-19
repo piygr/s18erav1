@@ -93,7 +93,7 @@ class UNet(pl.LightningModule):
         x, skip1 = self.contract1(x)
         x, skip2 = self.contract2(x)
         x, skip3 = self.contract3(x)
-        x, _ = self.contract4(x)
+        _, x = self.contract4(x)
 
         # Expanding path
         x = self.expand1(x, skip3)
