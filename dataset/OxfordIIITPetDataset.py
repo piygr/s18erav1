@@ -4,10 +4,9 @@ from torchvision import transforms as T
 
 import torch
 
+dataset_mean = None
+dataset_std = None
 def get_dataset_mean_variance(dataset):
-
-    global dataset_mean
-    global dataset_std
 
     if dataset_mean and dataset_std:
         return dataset_std, dataset_std
@@ -21,9 +20,6 @@ def get_dataset_mean_variance(dataset):
         for i in range(imgs.shape[1]):
             mean.append(imgs[:, i, :, :].mean().item())
             std.append(imgs[:, i, :, :].std().item())
-
-        dataset_mean = tuple(mean)
-        dataset_std = tuple(std)
 
         return tuple(mean), tuple(std)
 
@@ -60,7 +56,7 @@ def get_dataloader(**kwargs):
         ]
     )
 
-    if not dataset_mean or dataset_std:
+    if not dataset_mean or not dataset_std:
         get_dataset_mean_variance(SegmentOxfordIIITPetDataset(train=True, download=True, transform=transofrm))
 
     train_data = SegmentOxfordIIITPetDataset(train=True, download=True, transform=transofrm)
