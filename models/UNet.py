@@ -34,6 +34,7 @@ class ContractingBlock(nn.Module):
         skip = x  # store the output for the skip connection
         x = self.downsample(x)
 
+        print('x.shape: ', x.shape, ' skip.shape: ', skip.shape)
         return x, skip
 
 
@@ -57,6 +58,7 @@ class ExpandingBlock(nn.Module):
             self.upsample2 = nn.Conv2d(out_channels, out_channels // 2, kernel_size=1)
 
     def forward(self, x, skip):
+        print('skip.shape: ', skip.shape, ' x.shape: ', x.shape)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu1(x)
@@ -71,6 +73,8 @@ class ExpandingBlock(nn.Module):
 
         # concatenate the skip connection
         x = torch.cat((x, skip), dim=1)
+
+        print('x.shape: ', x.shape)
 
         return x
 
