@@ -81,7 +81,8 @@ class ExpandingBlock(nn.Module):
         if x.shape != skip.shape:
             x = TF.resize(x, size=skip.shape[2:])
 
-        x = torch.cat((x, skip), dim=1)
+        print('pre x.shape: ', x.shape, ' skip.shape: ', skip.shape)
+        x = torch.cat((skip, x), dim=1)
 
         print('x.shape: ', x.shape)
 
@@ -102,7 +103,7 @@ class UNet(pl.LightningModule):
         self.contract2 = ContractingBlock(64, 128, downsample=downsample)
         self.contract3 = ContractingBlock(128, 256, downsample=downsample)
 
-        self.bottleneck = ContractingBlock(256, 512, downsample=downsample)
+        self.bottleneck = ContractingBlock(256, 512, downsample=None)
 
         #self.expand0 = ExpandingBlock(1024, 512, upsample=upsample)
         self.expand1 = ExpandingBlock(512, 256, upsample=upsample)
@@ -126,15 +127,15 @@ class UNet(pl.LightningModule):
 
     def forward(self, x):
         # Contracting path
-        x, skip1 = self.contract1(x)    #64
-        x, skip2 = self.contract2(x)
-        x, skip3 = self.contract3(x)
+        x, skip1 = self.contract1(x)    #skip : 64
+        x, skip2 = self.contract2(x)    #skip : 128
+        x, skip3 = self.contract3(x)    #skip : 256
 
-        x, _ = self.bottleneck(x)
+        x, _ = self.bottleneck(x)       #x :    512
 
         # Expanding path
         #x = self.expand0(x, skip4)
-        x = self.expand1(x, skip3)
+        x = self.expand1(x, skip3)      #x: 512,
         x = self.expand2(x, skip2)
         x = self.expand3(x, skip1)
 
