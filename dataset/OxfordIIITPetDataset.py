@@ -50,10 +50,10 @@ class SegmentOxfordIIITPetDataset(Dataset):
         seg = np.array(seg, np.int16)
 
         if self.transform:
-            data_aug = self.transform(image=data)
+            data_aug = self.transform(image=data, )
             data = data_aug['image']
 
-            seg_aug = self.transform(image=seg)
+            seg_aug = self.transform(image=seg, )
             seg = seg_aug['image']
 
         return data, seg
