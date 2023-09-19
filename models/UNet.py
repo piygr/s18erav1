@@ -64,6 +64,14 @@ class ExpandingBlock(nn.Module):
             self.upsample2 = nn.Conv2d(out_channels, out_channels // 2, kernel_size=1, padding=1)
 
     def forward(self, x, skip):
+
+        # concatenate the skip connection
+        if x.shape != skip.shape:
+            x = TF.resize(x, size=skip.shape[2:])
+
+        print('pre x.shape: ', x.shape, ' skip.shape: ', skip.shape)
+        x = torch.cat((skip, x), dim=1)
+
         print('skip.shape: ', skip.shape, ' x.shape: ', x.shape)
         x = self.conv1(x)
         x = self.bn1(x)
@@ -76,13 +84,6 @@ class ExpandingBlock(nn.Module):
         x = self.upsample(x)
         if self.upsample2:
             x = self.upsample2(x)
-
-        # concatenate the skip connection
-        if x.shape != skip.shape:
-            x = TF.resize(x, size=skip.shape[2:])
-
-        print('pre x.shape: ', x.shape, ' skip.shape: ', skip.shape)
-        x = torch.cat((skip, x), dim=1)
 
         print('x.shape: ', x.shape)
 
@@ -103,9 +104,10 @@ class UNet(pl.LightningModule):
         self.contract2 = ContractingBlock(64, 128, downsample=downsample)
         self.contract3 = ContractingBlock(128, 256, downsample=downsample)
 
-        self.bottleneck = ContractingBlock(256, 512, downsample=None)
+        self.bottleneck = ContractingBlock(256, 512, downsample=downsample)
 
-        #self.expand0 = ExpandingBlock(1024, 512, upsample=upsample)
+        #self.bottleneck2 = ExpandingBlock(512, 256, upsample=None)
+
         self.expand1 = ExpandingBlock(512, 256, upsample=upsample)
         self.expand2 = ExpandingBlock(256, 128, upsample=upsample)
         self.expand3 = ExpandingBlock(128, 64, upsample=upsample)
@@ -127,11 +129,11 @@ class UNet(pl.LightningModule):
 
     def forward(self, x):
         # Contracting path
-        x, skip1 = self.contract1(x)    #skip : 64
-        x, skip2 = self.contract2(x)    #skip : 128
-        x, skip3 = self.contract3(x)    #skip : 256
+        x, skip1 = self.contract1(x)    #skip1 : 64
+        x, skip2 = self.contract2(x)    #skip2 : 128
+        x, skip3 = self.contract3(x)    #skip3 : 256
 
-        x, _ = self.bottleneck(x)       #x :    512
+        _, x = self.bottleneck(x)       #x :    256
 
         # Expanding path
         #x = self.expand0(x, skip4)
