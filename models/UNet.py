@@ -76,17 +76,23 @@ class ExpandingBlock(nn.Module):
 
 
 class UNet(pl.LightningModule):
-    def __init__(self, in_channels, out_channels, max_lr=None, loss_fn=nn.BCELoss):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 max_lr=None,
+                 loss_fn=nn.BCELoss,
+                 upsample='transpose_conv',
+                 downsample='strided_conv'):
         super(UNet, self).__init__()
 
-        self.contract1 = ContractingBlock(in_channels, 64)
-        self.contract2 = ContractingBlock(64, 128)
-        self.contract3 = ContractingBlock(128, 256)
-        self.contract4 = ContractingBlock(256, 512)
+        self.contract1 = ContractingBlock(in_channels, 64, downsample=downsample)
+        self.contract2 = ContractingBlock(64, 128, downsample=downsample)
+        self.contract3 = ContractingBlock(128, 256, downsample=downsample)
+        self.contract4 = ContractingBlock(256, 512, downsample=downsample)
 
-        self.expand1 = ExpandingBlock(512, 256)
-        self.expand2 = ExpandingBlock(256, 128)
-        self.expand3 = ExpandingBlock(128, 64)
+        self.expand1 = ExpandingBlock(512, 256, upsample=upsample)
+        self.expand2 = ExpandingBlock(256, 128, upsample=upsample)
+        self.expand3 = ExpandingBlock(128, 64, upsample=upsample)
 
         self.final_conv = nn.Conv2d(64, out_channels, kernel_size=1)
         self.loss_fn = loss_fn
