@@ -112,7 +112,7 @@ class UNet(pl.LightningModule):
         self.expand2 = ExpandingBlock(256, 128, upsample=upsample)
         self.expand3 = ExpandingBlock(128, 64, upsample=upsample)
 
-        self.final_conv = nn.Conv2d(64, out_channels, kernel_size=1)
+        self.final_conv = nn.Conv2d(32, out_channels, kernel_size=1)
         self.loss_fn = loss_fn
 
         self.max_lr = max_lr
@@ -140,7 +140,7 @@ class UNet(pl.LightningModule):
         print('x.shape: ', x.shape, ' skip3.shape: ', skip3.shape)
 
         x, _ = self.bottleneck(x)       #x :    256
-        print('Bottelneck x.shape: ', x.shape, ' t.shape: ', t.shape)
+        print('Bottelneck x.shape: ', x.shape)
         x = self.bottleneck2(x, None)
         print('Bottelneck2 x.shape: ', x.shape)
 
@@ -218,10 +218,10 @@ class UNet(pl.LightningModule):
 
     def configure_optimizers(self):
         if not self.max_lr:
-            optimizer = torch.optim.Adam(self.parameters(), lr=10e-6, weight_decay=10e-2)
+            optimizer = torch.optim.Adam(self.parameters(), lr=10e-6, weight_decay=10e-4)
             self.find_lr(optimizer)
 
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.max_lr, weight_decay=10e-2)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.max_lr, weight_decay=10e-4)
         '''scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,
                                                         max_lr=cfg.LEARNING_RATE,
                                                         epochs=self.trainer.max_epochs,
