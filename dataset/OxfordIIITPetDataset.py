@@ -1,11 +1,6 @@
 from torch.utils.data import Dataset
 import torchvision
 from torchvision import transforms as T
-import numpy as np
-from PIL import Image
-
-from config import get_config
-cfg = get_config(ds='unet')
 
 import torch
 
