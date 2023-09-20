@@ -65,7 +65,7 @@ class ExpandingBlock(nn.Module):
             self.upsample2 = None
         else:
             self.upsample = nn.Upsample(scale_factor=2, mode='nearest')
-            self.upsample2 = nn.Conv2d(out_channels, out_channels // 2, kernel_size=1, padding=1)
+            self.upsample2 = nn.Conv2d(out_channels, out_channels // 2, kernel_size=1)
 
     def forward(self, x, skip):
 
