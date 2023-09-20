@@ -70,7 +70,7 @@ class ExpandingBlock(nn.Module):
         if skip is not None:
             # concatenate the skip connection
             if x.shape != skip.shape:
-                x = TF.resize(x, size=skip.shape[2:])
+                skip = TF.resize(skip, size=x.shape[2:])
 
             x = torch.cat((skip, x), dim=1)
 
@@ -139,13 +139,12 @@ class UNet(pl.LightningModule):
         x, skip3 = self.contract3(x)    #skip3 : 256
         print('x.shape: ', x.shape, ' skip3.shape: ', skip3.shape)
 
-        t, x = self.bottleneck(x)       #x :    256
+        x, _ = self.bottleneck(x)       #x :    256
         print('Bottelneck x.shape: ', x.shape, ' t.shape: ', t.shape)
         x = self.bottleneck2(x, None)
         print('Bottelneck2 x.shape: ', x.shape)
 
         # Expanding path
-        #x = self.expand0(x, skip4)
         x = self.expand1(x, skip3)      #x: 512,
         print('x.shape: ', x.shape)
         x = self.expand2(x, skip2)
