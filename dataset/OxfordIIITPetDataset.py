@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset
 import torchvision
 from torchvision import transforms as T
+import numpy as np
 
 import torch
 
@@ -44,7 +45,15 @@ class SegmentOxfordIIITPetDataset(Dataset):
             data = self.target_transform(data)
 
         if self.mask_transform:
-            seg = self.mask_transform(seg)
+            seg = self.mask_transform(seg)*255
+
+            seg = torch.Tensor(np.array(seg))
+
+            seg1 = (seg == 1) * 1.0
+            seg2 = (seg == 2) * 1.0
+            seg3 = (seg == 3) * 1.0
+
+            seg = torch.stack([seg1, seg2, seg3], dim=0)
 
         return data, seg
 
@@ -68,8 +77,7 @@ def get_dataloader(**kwargs):
 
     mask_transform = T.Compose(
         [
-            T.Resize((224, 224)),
-            T.ToTensor()
+            T.Resize((224, 224))
         ]
     )
 
