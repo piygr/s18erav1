@@ -40,7 +40,6 @@ class ContractingBlock(nn.Module):
 
         x = self.downsample(x)
 
-        print('x.shape: ', x.shape, ' skip.shape: ', skip.shape)
         return x, skip
 
 
@@ -73,12 +72,8 @@ class ExpandingBlock(nn.Module):
             if x.shape != skip.shape:
                 x = TF.resize(x, size=skip.shape[2:])
 
-            print('pre x.shape: ', x.shape, ' skip.shape: ', skip.shape)
             x = torch.cat((skip, x), dim=1)
 
-            print('x.shape: ', x.shape)
-
-            print('skip.shape: ', skip.shape, ' x.shape: ', x.shape)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu1(x)
@@ -133,19 +128,31 @@ class UNet(pl.LightningModule):
 
 
     def forward(self, x):
+        print('Input x.shape: ', x.shape)
         # Contracting path
         x, skip1 = self.contract1(x)    #skip1 : 64
-        x, skip2 = self.contract2(x)    #skip2 : 128
-        x, skip3 = self.contract3(x)    #skip3 : 256
+        print('x.shape: ', x.shape, ' skip1.shape: ', skip1.shape)
 
-        _, x = self.bottleneck(x)       #x :    256
+        x, skip2 = self.contract2(x)    #skip2 : 128
+        print('x.shape: ', x.shape, ' skip2.shape: ', skip2.shape)
+
+        x, skip3 = self.contract3(x)    #skip3 : 256
+        print('x.shape: ', x.shape, ' skip3.shape: ', skip3.shape)
+
+        t, x = self.bottleneck(x)       #x :    256
+        print('Bottelneck x.shape: ', x.shape, ' t.shape: ', t.shape)
         x = self.bottleneck2(x, None)
+        print('Bottelneck2 x.shape: ', x.shape)
 
         # Expanding path
         #x = self.expand0(x, skip4)
         x = self.expand1(x, skip3)      #x: 512,
+        print('x.shape: ', x.shape)
         x = self.expand2(x, skip2)
+        print('x.shape: ', x.shape)
+
         x = self.expand3(x, skip1)
+        print('x.shape: ', x.shape)
 
         logits = self.final_conv(x)
 
