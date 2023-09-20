@@ -4,6 +4,8 @@ import torch
 from torch_lr_finder import LRFinder
 import torchvision.transforms.functional as TF
 
+from utils import plot_prediction_sample
+
 
 class ContractingBlock(nn.Module):
     def __init__(self, in_channels, out_channels, downsample=None):
@@ -123,7 +125,8 @@ class UNet(pl.LightningModule):
             epoch_train_loss=[],
             val_steps=0,
             step_val_loss=[],
-            epoch_val_loss=[]
+            epoch_val_loss=[],
+            sample=[]
         )
 
 
@@ -179,6 +182,9 @@ class UNet(pl.LightningModule):
 
         self.log_dict(dict(val_loss=loss))
 
+        self.metric['sample'] = [data[0], target[0], pred[0]]
+
+
 
     def on_validation_epoch_end(self):
         if self.metric['train_steps'] > 0:
@@ -194,6 +200,9 @@ class UNet(pl.LightningModule):
             self.metric['epoch_val_loss'].append(epoch_loss.item())
             self.metric['step_val_loss'] = []
             print('Val Loss: ', epoch_loss.item())
+
+            plot_prediction_sample(*self.metric['sample'])
+
 
 
 
