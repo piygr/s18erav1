@@ -26,10 +26,10 @@ def plot_image_seg(img, seg, mean, std):
 
 def plot_prediction_sample(input, target, pred):
     plt.subplot(1, 2, 1)
-    plt.imshow(input.permute(1, 2, 0))
+    plt.imshow(input.cpu().permute(1, 2, 0))
 
     plt.subplot(1, 2, 2)
-    plt.imshow(pred.permute(1, 2, 0))
+    plt.imshow(target.cpu().permute(1, 2, 0))
 
     plt.subplot(1, 2, 3)
-    plt.imshow(pred.permute(1, 2, 0))
+    plt.imshow(pred.cpu().permute(1, 2, 0))
