@@ -1,6 +1,6 @@
-def get_config(ds='unet'):
-    if ds == 'unet':
-        return dict(
-            image_size=224,
-            batch_size=32
-        )
+
+unet_config=dict(
+    image_size=224,
+    batch_size=32,
+    num_epochs=1
+)
