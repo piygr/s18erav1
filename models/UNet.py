@@ -235,7 +235,7 @@ class UNet(pl.LightningModule):
                                                         max_lr=self.max_lr,
                                                         epochs=self.trainer.max_epochs,
                                                         steps_per_epoch=len(self.train_dataloader()),
-                                                        pct_start=5 / self.trainer.max_epochs,
+                                                        pct_start=(5 / self.trainer.max_epochs) if self.trainer.max_epochs > 5 else 1,
                                                         div_factor=100,
                                                         final_div_factor=100,
                                                         three_phase=False,
