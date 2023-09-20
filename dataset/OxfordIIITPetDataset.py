@@ -45,7 +45,7 @@ class SegmentOxfordIIITPetDataset(Dataset):
             data = self.target_transform(data)
 
         if self.mask_transform:
-            seg = self.mask_transform(seg)*255
+            seg = self.mask_transform(seg)
 
             seg = torch.Tensor(np.array(seg))
 
