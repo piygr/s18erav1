@@ -46,3 +46,5 @@ def init(
     )
 
     trainer.fit(model, train_dataloader, val_dataloader)
+
+    return model
