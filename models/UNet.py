@@ -182,18 +182,18 @@ class UNet(pl.LightningModule):
 
     def on_validation_epoch_end(self):
         if self.metric['train_steps'] > 0:
-            print('Epoch ', self.current_epoch+1)
+            print('Epoch ', self.current_epoch)
 
             epoch_loss = sum(self.metric['step_train_loss']) / len(self.metric['step_train_loss'])
-            self.metric['epoch_train_loss'].append(epoch_loss)
+            self.metric['epoch_train_loss'].append(epoch_loss.item())
             self.metric['step_train_loss'] = []
 
-            print('Train Loss: ', epoch_loss)
+            print('Train Loss: ', epoch_loss.item())
 
             epoch_loss = sum(self.metric['step_val_loss']) / len(self.metric['step_val_loss'])
-            self.metric['epoch_val_loss'].append(epoch_loss)
+            self.metric['epoch_val_loss'].append(epoch_loss.item())
             self.metric['step_val_loss'] = []
-            print('Val Loss: ', epoch_loss)
+            print('Val Loss: ', epoch_loss.item())
 
 
 
@@ -222,11 +222,11 @@ class UNet(pl.LightningModule):
             self.find_lr(optimizer)
 
         optimizer = torch.optim.Adam(self.parameters(), lr=self.max_lr, weight_decay=10e-4)
-        '''scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,
-                                                        max_lr=cfg.LEARNING_RATE,
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,
+                                                        max_lr=self.max_lr,
                                                         epochs=self.trainer.max_epochs,
                                                         steps_per_epoch=len(self.train_dataloader()),
-                                                        pct_start=8 / self.trainer.max_epochs,
+                                                        pct_start=5 / self.trainer.max_epochs,
                                                         div_factor=100,
                                                         final_div_factor=100,
                                                         three_phase=False,
@@ -239,8 +239,8 @@ class UNet(pl.LightningModule):
                 'interval': 'step',  # or 'epoch'
                 'frequency': 1
             },
-        }'''
-
-        return {
-            "optimizer": optimizer
         }
+
+        '''return {
+            "optimizer": optimizer
+        }'''

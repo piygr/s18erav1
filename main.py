@@ -12,7 +12,7 @@ def init(
         max_lr=None,
         loss_fn=nn.BCELoss,
         upsample='transpose_conv',
-        downsample='strided_conv',
+        downsample='maxpool',
         num_epochs=1
 ):
 
