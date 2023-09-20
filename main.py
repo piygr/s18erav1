@@ -5,6 +5,7 @@ import pytorch_lightning as pl
 from config import unet_config
 
 from loss import bce_loss, dice_loss
+from utils import device
 
 def init(
         train_dataloader,
@@ -28,7 +29,7 @@ def init(
 
 
     if show_summary:
-        summary(model, input_size=(in_channels, unet_config['image_size'], unet_config['image_size']))
+        summary(model.to(device), input_size=(in_channels, unet_config['image_size'], unet_config['image_size']))
 
 
     trainer_args = dict(
