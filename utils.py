@@ -41,3 +41,20 @@ def plot_prediction_sample(input, target, pred):
         i += 1
         plt.subplot(1, 3, i)
         plt.imshow(pred.cpu().permute(1, 2, 0))
+
+
+def plot_vae_images(input_imgs, input_labels, pred_imgs):
+    image_count = len(input_imgs)
+    cols = 4
+    rows = 10
+
+    for i in range(1, rows+1):
+        for j in range(1, cols+1):
+            if j == 1:
+                plt.subplot(i, cols, j)
+                plt.imshow(input_imgs[i - 1].cpu().permute(1, 2, 0))
+                plt.title('-Input image-')
+            else:
+                plt.subplot(i, cols, j)
+                plt.imshow(pred_imgs[i-1][j-1].cpu().permute(1, 2, 0))
+                plt.title('Input label: '  + str(input_labels[i-1][j-1]) )

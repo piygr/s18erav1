@@ -1,12 +1,17 @@
 import torch.nn as nn
+
+from dataset.MNIST import MultiChannelMNIST
 from models.UNet import UNet
 from models.VAE import VAE
 from torchsummary import summary
 import pytorch_lightning as pl
 from config import unet_config, vae_config
 
+from torchvision import transforms as T
+
 from loss import bce_loss, dice_loss
-from utils import device
+from utils import device, plot_vae_images
+import random
 
 def init(
         train_dataloader,
@@ -63,3 +68,45 @@ def init(
     trainer.fit(model, train_dataloader, val_dataloader)
 
     return model
+
+def validate_vae(net, count=30):
+    cfg = vae_config
+    image_transform = T.Compose(
+        [
+            T.Resize((cfg['image_size'], cfg['image_size'])),
+            T.ToTensor()
+        ]
+    )
+
+    test_data = MultiChannelMNIST(root='../data', train=False, download=True, transform=image_transform)
+    input_images = []
+    input_labels = []
+    for i in range(10):
+        i_label = []
+        for data, label in next(test_data):
+            if label == i:
+                input_images.append(data)
+                for k in range(count // 10):
+                    temp = random.randint(0, 9)
+                    if temp == i:
+                        temp += random.choice([-1, 1])
+
+                    i_label.append(temp)
+                input_labels[i] = i_label
+
+                break
+
+
+    net.eval()
+    pred_images = []
+    for i in range(10):
+        p_imgs = []
+        for j in range( len(input_labels[i]) ):
+            x = input_images[i], input_labels[i][j]
+            x_hat = net(x)
+            p_imgs.append(x_hat)
+
+        pred_images[i] = p_imgs
+
+    plot_vae_images(input_images, input_labels, pred_images)
+
