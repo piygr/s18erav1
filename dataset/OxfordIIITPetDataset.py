@@ -22,7 +22,7 @@ def get_dataset_mean_variance(dataset):
 
 
 class SegmentOxfordIIITPetDataset(Dataset):
-    def __init__(self, root='../data', download=True, train=True, target_transform=None, mask_transform=None):
+    def __init__(self, root='../data', download=True, train=True, input_transform=None, mask_transform=None):
         if train:
             split = 'trainval'
         else:
@@ -33,7 +33,7 @@ class SegmentOxfordIIITPetDataset(Dataset):
                                                      download=download,
                                                      split=split)
 
-        self.target_transform = target_transform
+        self.input_transform = input_transform
         self.mask_transform = mask_transform
 
 
@@ -41,8 +41,8 @@ class SegmentOxfordIIITPetDataset(Dataset):
         data, seg = self.ds[idx]
 
 
-        if self.target_transform:
-            data = self.target_transform(data)
+        if self.input_transform:
+            data = self.input_transform(data)
 
         if self.mask_transform:
             seg = self.mask_transform(seg)
@@ -82,7 +82,7 @@ def get_dataloader(**kwargs):
     )
 
 
-    train_data = SegmentOxfordIIITPetDataset(train=True, download=True, target_transform=image_transform, mask_transform=mask_transform)
-    test_data = SegmentOxfordIIITPetDataset(train=False, download=True, target_transform=image_transform, mask_transform=mask_transform)
+    train_data = SegmentOxfordIIITPetDataset(train=True, download=True, input_transform=image_transform, mask_transform=mask_transform)
+    test_data = SegmentOxfordIIITPetDataset(train=False, download=True, input_transform=image_transform, mask_transform=mask_transform)
 
     return torch.utils.data.DataLoader(train_data, **kwargs), torch.utils.data.DataLoader(test_data, **kwargs)

@@ -1,8 +1,9 @@
 import torch.nn as nn
 from models.UNet import UNet
+from models.VAE import VAE
 from torchsummary import summary
 import pytorch_lightning as pl
-from config import unet_config
+from config import unet_config, vae_config
 
 from loss import bce_loss, dice_loss
 from utils import device
@@ -10,6 +11,7 @@ from utils import device
 def init(
         train_dataloader,
         val_dataloader,
+        net='UNet',
         in_channels=3,
         out_channels=1,
         show_summary=False,
@@ -20,26 +22,35 @@ def init(
         accelerator=None
 ):
 
-    model = UNet(in_channels=in_channels,
-                 out_channels=out_channels,
-                 max_lr=max_lr,
-                 loss_fn=loss_fn,
-                 upsample=upsample,
-                 downsample=downsample)
+    if net == 'UNet':
+        cfg = unet_config
 
+        model = UNet(in_channels=in_channels,
+                     out_channels=out_channels,
+                     max_lr=max_lr,
+                     loss_fn=loss_fn,
+                     upsample=upsample,
+                     downsample=downsample)
+
+    else:
+        cfg = vae_config
+        
+        model = VAE(
+            enc_out_dim=cfg['enc_out_dim'],
+            latent_dim=cfg['latent_dim'],
+            num_embed=cfg['num_classes']
+        )
 
     if show_summary:
-        summary(model.to(device), input_size=(in_channels, unet_config['image_size'], unet_config['image_size']))
-
+        summary(model.to(device), input_size=(in_channels, cfg['image_size'], cfg['image_size']))
 
     trainer_args = dict(
         precision='16-mixed',
-        max_epochs=unet_config['num_epochs']
+        max_epochs=cfg['num_epochs']
     )
 
     if accelerator:
         trainer_args['accelerator'] = accelerator
-
 
     trainer = pl.Trainer(
         **trainer_args
