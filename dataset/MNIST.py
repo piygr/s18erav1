@@ -19,6 +19,24 @@ def get_dataset_mean_variance(dataset):
 
     return tuple(mean), tuple(std)
 
+class MultiChannelMNIST(Dataset):
+    def __init__(self, root='../data', download=True, train=True, transform=None):
+
+        self.ds = torchvision.datasets.MNIST(root='../data', train=train, download=download, transform=transform)
+
+        self.transform = transform
+
+
+    def __getitem__(self, idx):
+        data, label = self.ds[idx]
+
+        data = torch.stack([data.squeeze(0), data.squeeze(0), data.squeeze(0)], dim=0)
+
+        return data, label
+
+
+    def __len__(self):
+        return len(self.ds)
 
 def get_dataloader(**kwargs):
 
@@ -27,6 +45,7 @@ def get_dataloader(**kwargs):
 
     image_transform = T.Compose(
         [
+            T.Resize((28, 28)),
             T.ToTensor(),
             T.Normalize(mean=dataset_mean, std=dataset_std)
         ]
