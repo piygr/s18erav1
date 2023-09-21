@@ -40,12 +40,14 @@ class MultiChannelMNIST(Dataset):
 
 def get_dataloader(**kwargs):
 
+    from config import vae_config as cfg
+
     dataset_mean = (0.1307,)
     dataset_std = (0.3081,)
 
     image_transform = T.Compose(
         [
-            T.Resize((28, 28)),
+            T.Resize((cfg['image_size'], cfg['image_size'])),
             T.ToTensor(),
             T.Normalize(mean=dataset_mean, std=dataset_std)
         ]
