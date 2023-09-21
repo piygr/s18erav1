@@ -68,6 +68,21 @@ class VAE(pl.LightningModule):
         kl = kl.sum(-1)
         return kl
 
+    def forward(self, x):
+        x, label = x
+        x_encoded = self.encoder(x)
+        x_encoded_embedded = x_encoded + self.label_embed[label]
+        mu, log_var = self.fc_mu(x_encoded_embedded), self.fc_var(x_encoded_embedded)
+
+        # sample z from q
+        std = torch.exp(log_var / 2)
+        q = torch.distributions.Normal(mu, std)
+        z = q.rsample()
+
+        # decoded
+        x_hat = self.decoder(z)
+        return x_hat
+
     def training_step(self, batch, batch_idx):
         x, label = batch
 
