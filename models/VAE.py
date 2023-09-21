@@ -88,7 +88,7 @@ class VAE(pl.LightningModule):
 
         # encode x to get the mu and variance parameters
         x_encoded = self.encoder(x)
-        x_encoded_embedded = x_encoded + self.label_embed[label]
+        x_encoded_embedded = x_encoded + self.label_embed(label)
 
         mu, log_var = self.fc_mu(x_encoded_embedded), self.fc_var(x_encoded_embedded)
 
@@ -130,7 +130,7 @@ class VAE(pl.LightningModule):
 
         # encode x to get the mu and variance parameters
         x_encoded = self.encoder(x)
-        x_encoded_embedded = x_encoded + self.label_embed[label]
+        x_encoded_embedded = x_encoded + self.label_embed(label)
 
         mu, log_var = self.fc_mu(x_encoded_embedded), self.fc_var(x_encoded_embedded)
 
