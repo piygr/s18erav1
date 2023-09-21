@@ -52,7 +52,7 @@ def get_dataloader(**kwargs):
     )
 
 
-    train_data = torchvision.datasets.MNIST(root='../data', train=True, download=True, transform=image_transform)
-    test_data = torchvision.datasets.MNIST(root='../data', train=False, download=True, transform=image_transform)
+    train_data = MultiChannelMNIST(root='../data', train=True, download=True, transform=image_transform)
+    test_data = MultiChannelMNIST(root='../data', train=False, download=True, transform=image_transform)
 
     return torch.utils.data.DataLoader(train_data, **kwargs), torch.utils.data.DataLoader(test_data, **kwargs)
