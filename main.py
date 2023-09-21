@@ -58,7 +58,7 @@ def init(
     )
 
     if accelerator:
-        trainer_args['precision'] = '16-mixed'
+        #trainer_args['precision'] = '16-mixed'
         trainer_args['accelerator'] = accelerator
 
     trainer = pl.Trainer(
