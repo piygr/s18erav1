@@ -30,7 +30,7 @@ class VAE(pl.LightningModule):
         self.log_scale = nn.Parameter(torch.Tensor([0.0]))
 
         #label embedding
-        #self.label_embed  = nn.Embedding(num_embed, embedding_dim=enc_out_dim)
+        self.label_embed  = nn.Embedding(num_embed, embedding_dim=enc_out_dim)
 
         self.metric = dict(
             train_steps=0,
@@ -71,7 +71,7 @@ class VAE(pl.LightningModule):
     def forward(self, x):
         x, label = x
         x_encoded = self.encoder(x)
-        x_encoded_embedded = x_encoded #+ self.label_embed(label)
+        x_encoded_embedded = x_encoded * self.label_embed(label)
         mu, log_var = self.fc_mu(x_encoded_embedded), self.fc_var(x_encoded_embedded)
 
         # sample z from q
@@ -88,7 +88,7 @@ class VAE(pl.LightningModule):
 
         # encode x to get the mu and variance parameters
         x_encoded = self.encoder(x)
-        x_encoded_embedded = x_encoded #+ self.label_embed(label)
+        x_encoded_embedded = x_encoded * self.label_embed(label)
 
         mu, log_var = self.fc_mu(x_encoded_embedded), self.fc_var(x_encoded_embedded)
 
@@ -130,7 +130,7 @@ class VAE(pl.LightningModule):
 
         # encode x to get the mu and variance parameters
         x_encoded = self.encoder(x)
-        x_encoded_embedded = x_encoded #+ self.label_embed(label)
+        x_encoded_embedded = x_encoded * self.label_embed(label)
 
         mu, log_var = self.fc_mu(x_encoded_embedded), self.fc_var(x_encoded_embedded)
 
