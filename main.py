@@ -34,7 +34,7 @@ def init(
 
     else:
         cfg = vae_config
-        
+
         model = VAE(
             enc_out_dim=cfg['enc_out_dim'],
             latent_dim=cfg['latent_dim'],
@@ -42,14 +42,16 @@ def init(
         )
 
     if show_summary:
+        print(in_channels, cfg)
         summary(model.to(device), input_size=(in_channels, cfg['image_size'], cfg['image_size']))
 
     trainer_args = dict(
-        precision='16-mixed',
+        precision='16',
         max_epochs=cfg['num_epochs']
     )
 
     if accelerator:
+        trainer_args['precision'] = '16-mixed'
         trainer_args['accelerator'] = accelerator
 
     trainer = pl.Trainer(
