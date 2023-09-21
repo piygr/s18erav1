@@ -35,10 +35,12 @@ def init(
     else:
         cfg = vae_config
 
+        #enc_out_dim=512, latent_dim=256, input_height=28, num_embed=10
         model = VAE(
             enc_out_dim=cfg['enc_out_dim'],
             latent_dim=cfg['latent_dim'],
-            num_embed=cfg['num_classes']
+            num_embed=cfg['num_classes'],
+            input_height=cfg['image_size']
         )
 
     if show_summary:

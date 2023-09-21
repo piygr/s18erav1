@@ -8,7 +8,7 @@ from pl_bolts.models.autoencoders.components import (
 )
 
 class VAE(pl.LightningModule):
-    def __init__(self, enc_out_dim=512, latent_dim=256, input_height=32, num_embed=10):
+    def __init__(self, enc_out_dim=512, latent_dim=256, input_height=28, num_embed=10):
         super().__init__()
 
         self.save_hyperparameters()
