@@ -71,7 +71,7 @@ class VAE(pl.LightningModule):
     def forward(self, x):
         x, label = x
         x_encoded = self.encoder(x)
-        x_encoded_embedded = x_encoded + self.label_embed[label]
+        x_encoded_embedded = x_encoded + self.label_embed(label)
         mu, log_var = self.fc_mu(x_encoded_embedded), self.fc_var(x_encoded_embedded)
 
         # sample z from q
