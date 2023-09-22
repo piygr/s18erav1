@@ -1,6 +1,8 @@
 import torch.nn as nn
 import pytorch_lightning as pl
 import torch
+
+
 from torch_lr_finder import LRFinder
 import torchvision.transforms.functional as TF
 
@@ -129,6 +131,8 @@ class UNet(pl.LightningModule):
             sample=[]
         )
 
+        self.out_channels = out_channels
+
 
     def forward(self, x):
         #print('Input x.shape: ', x.shape)
@@ -156,7 +160,13 @@ class UNet(pl.LightningModule):
         x = self.expand3(x, skip1)
         #print('x.shape: ', x.shape)
 
-        logits = self.final_conv(x)
+        logits = self.final_conv(x)  #B, C, H, W
+
+        #x = x.view(x.size(0), -1)    #B, C
+
+        #x = F.softmax(x, dim=1)
+
+        #return x.view(x.size(0), self.out_channels, -1)
 
         return logits
 

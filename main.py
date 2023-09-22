@@ -70,7 +70,7 @@ def init(
 
     return model
 
-def validate_vae(net, count=40, label_fn=None):
+def validate_vae(net, cfg, val_data, count=40, label_fn=None):
     cfg = vae_config
     image_transform = T.Compose(
         [
@@ -79,7 +79,7 @@ def validate_vae(net, count=40, label_fn=None):
         ]
     )
 
-    test_data = MultiChannelMNIST(root='../data', train=False, download=True, transform=image_transform)
+    test_data = val_data #MultiChannelMNIST(root='../data', train=False, download=True, transform=image_transform)
     input_images = []
     input_labels = []
     for i in range(10):
