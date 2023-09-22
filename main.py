@@ -38,7 +38,7 @@ def init(
                      upsample=upsample,
                      downsample=downsample)
 
-    else:
+    '''else:
         cfg = vae_config
 
         #enc_out_dim=512, latent_dim=256, input_height=28, num_embed=10
@@ -47,7 +47,7 @@ def init(
             latent_dim=cfg['latent_dim'],
             num_embed=cfg['num_classes'],
             input_height=cfg['image_size']
-        )
+        )'''
 
     if show_summary:
         print(in_channels, cfg)
