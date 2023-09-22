@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
+from utils import device
 
 def dice_loss(pred, target):
     smooth = 1e-5
@@ -14,7 +15,7 @@ def dice_loss(pred, target):
     #channel wise loss
 
     # flatten predictions and targets
-    loss = torch.tensor(0.)
+    loss = torch.tensor(0.).to(device)
     for i in range(channels):
         yi = y[:, i, :, :]
         ti = target[:, i, :, :]
@@ -31,12 +32,12 @@ def dice_loss(pred, target):
     return 1 - (loss / channels)
 
 def bce_loss(pred, target):
-    y = pred.view(pred.size(0), -1)
-    y = F.softmax(y, dim=1)
+    #y = pred.view(pred.size(0), -1)
+    y = F.softmax(pred, dim=1)
 
     #y = y.view(y.size(0), -1)
-    target = target.view(target.size(0), -1)
-    loss_fn = nn.BCEWithLogitsLoss()
+    #target = target.view(target.size(0), -1)
+    loss_fn = nn.BCELoss()
     loss = loss_fn(y, target)
 
     return loss
