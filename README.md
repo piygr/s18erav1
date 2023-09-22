@@ -185,4 +185,23 @@ Val Loss:  0.17214788496494293
 <img width="581" alt="Screenshot 2023-09-23 at 1 39 34 AM" src="https://github.com/piygr/s18erav1/assets/135162847/738c1ac3-44a7-4a08-a857-bac216bfe780">
 
 
-## Part 2
+## Part 2 - VAE Implementation with Label as Input Embedding
+### Strategy
+- Created label-embedding on the lines of CLIP and passed as input along with the image.
+- The label-embedding is multiplied to the encoder output of the image eg.
+```
+x_encoded = self.encoder(x)
+x_encoded_embedded = x_encoded * self.label_embed(label)
+```
+
+### MNIST output with wrong labels
+<img width="598" alt="Screenshot 2023-09-23 at 1 45 54 AM" src="https://github.com/piygr/s18erav1/assets/135162847/8f2c711d-e223-4f89-8caf-31527f8c521c">
+<img width="597" alt="Screenshot 2023-09-23 at 1 46 05 AM" src="https://github.com/piygr/s18erav1/assets/135162847/d73d3abd-4aef-4e2f-ba3d-b47755d6fef1">
+
+
+### CIFAR10 output with wrong labels
+<img width="594" alt="Screenshot 2023-09-23 at 1 52 41 AM" src="https://github.com/piygr/s18erav1/assets/135162847/62095bd9-b0d0-4da7-b8c9-7f581bce45b3">
+<img width="585" alt="Screenshot 2023-09-23 at 1 52 56 AM" src="https://github.com/piygr/s18erav1/assets/135162847/ddeeeec5-7bf3-4115-9f28-875828caf258">
+
+
+
