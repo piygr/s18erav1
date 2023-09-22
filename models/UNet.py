@@ -2,6 +2,7 @@ import torch.nn as nn
 import pytorch_lightning as pl
 import torch
 
+import torch.nn.functional as F
 
 from torch_lr_finder import LRFinder
 import torchvision.transforms.functional as TF
@@ -192,7 +193,8 @@ class UNet(pl.LightningModule):
 
         self.log_dict(dict(val_loss=loss))
 
-        self.metric['sample'] = [data[0], target[0], pred[0]]
+        y = F.softmax(pred.size(0), dim=1)
+        self.metric['sample'] = [data[0], target[0], y[0]]
 
 
 
@@ -210,6 +212,7 @@ class UNet(pl.LightningModule):
             self.metric['epoch_val_loss'].append(epoch_loss.item())
             self.metric['step_val_loss'] = []
             print('Val Loss: ', epoch_loss.item())
+
 
             plot_prediction_sample(*self.metric['sample'])
 
