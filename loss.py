@@ -19,8 +19,8 @@ def dice_loss(pred, target):
         yi = y[:, i, :, :]
         ti = target[:, i, :, :]
 
-        yi = yi.view(-1)
-        ti = ti.view(-1)
+        yi = yi.view(y.size(0), -1)
+        ti = ti.view(target.size(0), -1)
 
         intersection = (yi * ti).sum()
         union = yi.sum() + ti.sum()
@@ -34,8 +34,8 @@ def bce_loss(pred, target):
     y = pred.view(pred.size(0), -1)
     y = F.softmax(y, dim=1)
 
-    y = y.view(-1)
-    target = target.view(-1)
+    #y = y.view(y.size(0), -1)
+    target = target.view(target.size(0), -1)
     loss_fn = nn.BCEWithLogitsLoss()
     loss = loss_fn(y, target)
 
