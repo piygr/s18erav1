@@ -6,9 +6,11 @@ from pl_bolts.models.autoencoders.components import (
     resnet18_decoder,
     resnet18_encoder,
 )
+from torch_lr_finder import LRFinder
+
 
 class VAE(pl.LightningModule):
-    def __init__(self, enc_out_dim=512, latent_dim=256, input_height=28, num_embed=10):
+    def __init__(self, enc_out_dim=512, latent_dim=256, input_height=28, num_embed=10, max_lr=None):
         super().__init__()
 
         self.save_hyperparameters()
@@ -32,6 +34,8 @@ class VAE(pl.LightningModule):
         #label embedding
         self.label_embed  = nn.Embedding(num_embed, embedding_dim=enc_out_dim)
 
+        self.max_lr = max_lr
+
         self.metric = dict(
             train_steps=0,
             step_train_loss=[],
@@ -42,8 +46,46 @@ class VAE(pl.LightningModule):
             sample=[]
         )
 
+    def train_dataloader(self):
+        if not self.trainer.train_dataloader:
+            self.trainer.fit_loop.setup_data()
+
+        return self.trainer.train_dataloader
+
+
+    def find_lr(self, optimizer):
+
+        lr_finder = LRFinder(self, optimizer, self.loss_fn)
+        lr_finder.range_test(self.train_dataloader(), end_lr=100, num_iter=200)
+        _, best_lr = lr_finder.plot()  # to inspect the loss-learning rate graph
+        lr_finder.reset()
+        self.max_lr = best_lr
+
+
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=1e-4)
+        if not self.max_lr:
+            optimizer = torch.optim.Adam(self.parameters(), lr=10e-6, weight_decay=10e-4)
+            self.find_lr(optimizer)
+
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.max_lr, weight_decay=10e-4)
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,
+                                                        max_lr=self.max_lr,
+                                                        epochs=self.trainer.max_epochs,
+                                                        steps_per_epoch=len(self.train_dataloader()),
+                                                        pct_start=(5 / self.trainer.max_epochs) if self.trainer.max_epochs > 5 else 0.9,
+                                                        div_factor=100,
+                                                        final_div_factor=100,
+                                                        three_phase=False,
+                                                        verbose=False
+                                                        )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                'interval': 'step',  # or 'epoch'
+                'frequency': 1
+            },
+        }
 
     def gaussian_likelihood(self, mean, logscale, sample):
         scale = torch.exp(logscale)
