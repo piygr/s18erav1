@@ -5,7 +5,6 @@ from models.UNet import UNet
 #from models.VAE import VAE
 from torchsummary import summary
 import pytorch_lightning as pl
-from config import unet_config, vae_config
 
 from torchvision import transforms as T
 
@@ -17,7 +16,8 @@ import torch
 def init(
         train_dataloader,
         val_dataloader,
-        net='UNet',
+        model,
+        cfg=None,
         in_channels=3,
         out_channels=1,
         show_summary=False,
@@ -28,17 +28,10 @@ def init(
         accelerator=None
 ):
 
-    if net == 'UNet':
-        cfg = unet_config
+    '''if net == 'UNet':
 
-        model = UNet(in_channels=in_channels,
-                     out_channels=out_channels,
-                     max_lr=max_lr,
-                     loss_fn=loss_fn,
-                     upsample=upsample,
-                     downsample=downsample)
 
-    '''else:
+    else:
         cfg = vae_config
 
         #enc_out_dim=512, latent_dim=256, input_height=28, num_embed=10
@@ -50,7 +43,6 @@ def init(
         )'''
 
     if show_summary:
-        print(in_channels, cfg)
         summary(model.to(device), input_size=(in_channels, cfg['image_size'], cfg['image_size']))
 
     trainer_args = dict(
@@ -71,7 +63,6 @@ def init(
     return model
 
 def validate_vae(net, cfg, val_data, count=40, label_fn=None):
-    cfg = vae_config
     image_transform = T.Compose(
         [
             T.Resize((cfg['image_size'], cfg['image_size'])),
