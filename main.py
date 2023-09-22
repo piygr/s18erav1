@@ -12,6 +12,7 @@ from torchvision import transforms as T
 from loss import bce_loss, dice_loss
 from utils import device, plot_vae_images
 import random
+import torch
 
 def init(
         train_dataloader,
@@ -83,7 +84,7 @@ def validate_vae(net, count=30):
     input_labels = []
     for i in range(10):
         i_label = []
-        for data, label in next(test_data):
+        for data, label in test_data:
             if label == i:
                 input_images.append(data)
                 for k in range(count // 10):
@@ -92,7 +93,7 @@ def validate_vae(net, count=30):
                         temp += random.choice([-1, 1])
 
                     i_label.append(temp)
-                input_labels[i] = i_label
+                input_labels.append(i_label)
 
                 break
 
@@ -102,11 +103,12 @@ def validate_vae(net, count=30):
     for i in range(10):
         p_imgs = []
         for j in range( len(input_labels[i]) ):
-            x = input_images[i], input_labels[i][j]
+            x = input_images[i].unsqueeze(0), torch.tensor(input_labels[i][j]).unsqueeze(0)
+            #print(input_labels[i])
             x_hat = net(x)
-            p_imgs.append(x_hat)
+            p_imgs.append(x_hat.squeeze(0))
 
-        pred_images[i] = p_imgs
+        pred_images.append( p_imgs )
 
     plot_vae_images(input_images, input_labels, pred_images)
 
