@@ -43,11 +43,9 @@ def plot_prediction_sample(input, target, pred):
         plt.imshow(pred.cpu().permute(1, 2, 0))
 
 
-def plot_vae_images(input_imgs, input_labels, pred_imgs):
-    cols = 4
-    rows = 10
+def plot_vae_images(input_imgs, input_labels, pred_imgs, cols=5, rows=10, label_fn=None):
 
-    plt.figure(figsize=(5, 10))
+    plt.figure(figsize=(6, 12))
     c = 1
     for i in range(1, rows + 1):
         for j in range(1, cols + 1):
@@ -60,10 +58,13 @@ def plot_vae_images(input_imgs, input_labels, pred_imgs):
                 plt.yticks([])
 
             else:
+                lbl = input_labels[i - 1][j - 2]
+                if label_fn:
+                    lbl = label_fn(lbl)
                 plt.subplot(rows, cols, c)
                 plt.tight_layout()
                 plt.imshow(pred_imgs[i - 1][j - 2].detach().cpu().permute(1, 2, 0), aspect='auto')
-                plt.title('Input label: ' + str(input_labels[i - 1][j - 2]), fontsize=8)
+                plt.title('Input label: ' + str(lbl), fontsize=8)
                 # plt.title(str(input_labels[i - 1][j - 2]), fontsize=8)
                 plt.xticks([])
                 plt.yticks([])

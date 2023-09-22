@@ -70,7 +70,7 @@ def init(
 
     return model
 
-def validate_vae(net, count=30):
+def validate_vae(net, count=40, label_fn=None):
     cfg = vae_config
     image_transform = T.Compose(
         [
@@ -110,5 +110,5 @@ def validate_vae(net, count=30):
 
         pred_images.append( p_imgs )
 
-    plot_vae_images(input_images, input_labels, pred_images)
+    plot_vae_images(input_images, input_labels, pred_images, cols=count // 10, rows = 10, label_fn=label_fn)
 
