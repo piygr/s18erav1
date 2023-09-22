@@ -10,7 +10,7 @@ from torch_lr_finder import LRFinder
 
 
 class VAE(pl.LightningModule):
-    def __init__(self, enc_out_dim=512, latent_dim=256, input_height=28, num_embed=10, max_lr=None):
+    def __init__(self, enc_out_dim=512, latent_dim=256, input_height=28, num_embed=10, max_lr=None, steps_per_epoch=10):
         super().__init__()
 
         self.save_hyperparameters()
@@ -35,7 +35,8 @@ class VAE(pl.LightningModule):
         self.label_embed  = nn.Embedding(num_embed, embedding_dim=enc_out_dim)
 
         self.max_lr = max_lr
-
+        self.steps_per_epoch = steps_per_epoch
+        
         self.metric = dict(
             train_steps=0,
             step_train_loss=[],
@@ -46,11 +47,11 @@ class VAE(pl.LightningModule):
             sample=[]
         )
 
-    def train_dataloader(self):
+    '''def train_dataloader(self):
         if not self.trainer.train_dataloader:
             self.trainer.fit_loop.setup_data()
 
-        return self.trainer.train_dataloader
+        return self.trainer.train_dataloader'''
 
 
     def find_lr(self, optimizer):
@@ -71,7 +72,7 @@ class VAE(pl.LightningModule):
         scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,
                                                         max_lr=self.max_lr,
                                                         epochs=self.trainer.max_epochs,
-                                                        steps_per_epoch=len(self.train_dataloader()),
+                                                        steps_per_epoch=self.steps_per_epoch,
                                                         pct_start=(5 / self.trainer.max_epochs) if self.trainer.max_epochs > 5 else 0.9,
                                                         div_factor=100,
                                                         final_div_factor=100,
