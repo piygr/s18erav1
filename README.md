@@ -44,6 +44,8 @@ Epoch  9
 Train Loss:  0.7644016146659851
 Val Loss:  0.7651811242103577
 ```
+<img width="555" alt="Screenshot 2023-09-23 at 1 38 15 AM" src="https://github.com/piygr/s18erav1/assets/135162847/daf28c26-fb87-4071-81d7-22b46fb7cff9">
+
 
 **MP+Tr+Dice**
 ```
@@ -78,6 +80,8 @@ Epoch  9
 Train Loss:  0.19882728159427643
 Val Loss:  0.18406975269317627
 ```
+<img width="562" alt="Screenshot 2023-09-23 at 1 38 35 AM" src="https://github.com/piygr/s18erav1/assets/135162847/439735de-55d0-449e-904f-e4f4d4b9e8b9">
+
 
 **StrConv+Tr+BCE**
 ```
@@ -127,6 +131,8 @@ Epoch  14
 Train Loss:  0.6787976622581482
 Val Loss:  0.6796802878379822
 ```
+<img width="599" alt="Screenshot 2023-09-23 at 1 39 24 AM" src="https://github.com/piygr/s18erav1/assets/135162847/2de4b00b-58f9-4b87-9869-48901642c34d">
+
 
 **StrConv+Ups+Dice**
 ```
@@ -176,5 +182,7 @@ Epoch  14
 Train Loss:  0.17647115886211395
 Val Loss:  0.17214788496494293
 ```
+<img width="581" alt="Screenshot 2023-09-23 at 1 39 34 AM" src="https://github.com/piygr/s18erav1/assets/135162847/738c1ac3-44a7-4a08-a857-bac216bfe780">
+
 
 ## Part 2
