@@ -26,18 +26,18 @@ def plot_image_seg(img, seg, mean, std):
 
 def plot_prediction_sample(input, target, pred):
     i = 0
-    if input:
+    if input is not None:
         i += 1
         plt.subplot(1, 3, i)
         plt.imshow(input.cpu().permute(1, 2, 0))
 
 
-    if target:
+    if target is not None:
         i += 1
         plt.subplot(1, 3, i)
         plt.imshow(target.cpu().permute(1, 2, 0))
 
-    if pred:
+    if pred is not None:
         i += 1
         plt.subplot(1, 3, i)
         plt.imshow(pred.cpu().permute(1, 2, 0))
