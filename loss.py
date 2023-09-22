@@ -8,7 +8,7 @@ def dice_loss(pred, target):
     channels = target.size(1)
 
     y = pred.view(pred.size(0), -1)
-    y = F.softmax(pred, dim=1)
+    y = F.softmax(y, dim=1)
     y = y.view(y.size(0), channels, pred.size(-2), pred.size(-1))
 
     #channel wise loss
