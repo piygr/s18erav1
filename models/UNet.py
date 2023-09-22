@@ -193,7 +193,7 @@ class UNet(pl.LightningModule):
 
         self.log_dict(dict(val_loss=loss))
 
-        y = F.softmax(pred.size(0), dim=1)
+        y = F.softmax(pred, dim=1)
         self.metric['sample'] = [data[0], target[0], y[0]]
 
 
