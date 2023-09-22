@@ -2,7 +2,7 @@ import torch.nn as nn
 
 from dataset.MNIST import MultiChannelMNIST
 from models.UNet import UNet
-from models.VAE import VAE
+#from models.VAE import VAE
 from torchsummary import summary
 import pytorch_lightning as pl
 from config import unet_config, vae_config
