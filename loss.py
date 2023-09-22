@@ -37,7 +37,7 @@ def bce_loss(pred, target):
 
     #y = y.view(y.size(0), -1)
     #target = target.view(target.size(0), -1)
-    loss_fn = nn.BCELoss()
+    loss_fn = nn.CrossEntropyLoss()
     loss = loss_fn(y, target)
 
     return loss
